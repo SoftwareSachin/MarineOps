@@ -54,6 +54,14 @@ export default function Dashboard() {
         case 'environmental_update':
           setLatestEnvironmental(lastMessage.data);
           break;
+        case 'alert_update':
+          // In a real app, you'd use queryClient.invalidateQueries(['api/alerts'])
+          // For now, we'll let the regular query polling handle updates
+          break;
+        case 'vessel_update':
+          // Update vessel position in real-time
+          // Note: In a real app, you'd update the query cache
+          break;
       }
     }
   }, [lastMessage]);
@@ -71,8 +79,8 @@ export default function Dashboard() {
         <DashboardHeader
           vesselName={currentVessel?.name}
           vesselPosition={
-            currentVessel?.position 
-              ? `${currentVessel.position.latitude.toFixed(4)}°N, ${Math.abs(currentVessel.position.longitude).toFixed(4)}°W`
+            currentVessel?.position && typeof currentVessel.position === 'object' && 'latitude' in currentVessel.position && 'longitude' in currentVessel.position
+              ? `${(currentVessel.position as any).latitude.toFixed(4)}°N, ${Math.abs((currentVessel.position as any).longitude).toFixed(4)}°W`
               : undefined
           }
           isOnline={isConnected}
@@ -84,7 +92,11 @@ export default function Dashboard() {
             {/* Navigation Map - Large widget */}
             <div className="col-span-12 lg:col-span-8">
               <NavigationMapWidget
-                vesselPosition={currentVessel?.position}
+                vesselPosition={
+                  currentVessel?.position && typeof currentVessel.position === 'object' && 'latitude' in currentVessel.position && 'longitude' in currentVessel.position
+                    ? currentVessel.position as { latitude: number; longitude: number }
+                    : undefined
+                }
                 environmentalData={latestEnvironmental ? {
                   windSpeed: latestEnvironmental.windSpeed,
                   windDirection: latestEnvironmental.windDirection,

@@ -4,7 +4,7 @@ export interface VesselPosition {
 }
 
 export interface RealtimeData {
-  type: 'performance_update' | 'environmental_update' | 'alert_update' | 'connection';
+  type: 'performance_update' | 'environmental_update' | 'alert_update' | 'vessel_update' | 'connection';
   data?: any;
   message?: string;
 }

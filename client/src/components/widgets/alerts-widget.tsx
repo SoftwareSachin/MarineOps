@@ -96,7 +96,7 @@ export function AlertsWidget({ vesselId }: AlertsWidgetProps) {
                         {alert.severity.toUpperCase()}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {formatTimeAgo(alert.createdAt)}
+                        {alert.createdAt ? formatTimeAgo(alert.createdAt) : 'Unknown'}
                       </span>
                     </div>
                     <p className="text-sm text-foreground">{alert.title}</p>

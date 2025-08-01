@@ -79,8 +79,72 @@ export class MemStorage implements IStorage {
     // Initialize environmental data
     this.environmentalData.set(vesselId, []);
     
-    // Initialize maintenance schedule
-    this.maintenanceSchedule.set(vesselId, []);
+    // Initialize maintenance schedule with realistic tasks
+    const maintenanceTasks = [
+      {
+        id: randomUUID(),
+        vesselId: vesselId,
+        title: "Engine Oil Change",
+        description: "Scheduled engine oil and filter replacement for main engine",
+        scheduledDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+        estimatedDuration: 4,
+        assignedTo: "Chief Engineer Martinez",
+        status: "scheduled" as const,
+        priority: "high" as const,
+        createdAt: new Date()
+      },
+      {
+        id: randomUUID(),
+        vesselId: vesselId,
+        title: "Navigation Equipment Calibration",
+        description: "Quarterly calibration of GPS and radar systems",
+        scheduledDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 week from now
+        estimatedDuration: 6,
+        assignedTo: "Navigation Officer Chen",
+        status: "scheduled" as const,
+        priority: "medium" as const,
+        createdAt: new Date()
+      },
+      {
+        id: randomUUID(),
+        vesselId: vesselId,
+        title: "Hull Inspection",
+        description: "Underwater hull inspection and cleaning",
+        scheduledDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Yesterday (in progress)
+        estimatedDuration: 8,
+        assignedTo: "Marine Inspector Thompson",
+        status: "in_progress" as const,
+        priority: "high" as const,
+        createdAt: new Date()
+      }
+    ];
+    this.maintenanceSchedule.set(vesselId, maintenanceTasks);
+
+    // Add some initial alerts
+    const alerts = [
+      {
+        id: randomUUID(),
+        vesselId: vesselId,
+        severity: "medium" as const,
+        title: "Fuel Consumption Above Normal",
+        description: "Current fuel consumption is 8% higher than optimal for current conditions",
+        category: "engine" as const,
+        acknowledged: false,
+        createdAt: new Date(Date.now() - 45 * 60 * 1000) // 45 minutes ago
+      },
+      {
+        id: randomUUID(),
+        vesselId: vesselId,
+        severity: "low" as const,
+        title: "Weather Advisory",
+        description: "Moderate headwinds expected in next 4 hours. Consider speed adjustment",
+        category: "navigation" as const,
+        acknowledged: false,
+        createdAt: new Date(Date.now() - 20 * 60 * 1000) // 20 minutes ago
+      }
+    ];
+    
+    alerts.forEach(alert => this.alerts.set(alert.id, alert));
   }
 
   // User methods
@@ -94,7 +158,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id, createdAt: new Date() };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      createdAt: new Date(),
+      role: insertUser.role || "viewer"
+    };
     this.users.set(id, user);
     return user;
   }
@@ -110,7 +179,14 @@ export class MemStorage implements IStorage {
 
   async createVessel(insertVessel: InsertVessel): Promise<Vessel> {
     const id = randomUUID();
-    const vessel: Vessel = { ...insertVessel, id, createdAt: new Date() };
+    const vessel: Vessel = { 
+      ...insertVessel, 
+      id, 
+      createdAt: new Date(),
+      speed: insertVessel.speed || 0,
+      heading: insertVessel.heading || 0,
+      status: insertVessel.status || "active"
+    };
     this.vessels.set(id, vessel);
     return vessel;
   }
@@ -162,7 +238,12 @@ export class MemStorage implements IStorage {
 
   async createAlert(insertAlert: InsertAlert): Promise<Alert> {
     const id = randomUUID();
-    const alert: Alert = { ...insertAlert, id, createdAt: new Date() };
+    const alert: Alert = { 
+      ...insertAlert, 
+      id, 
+      createdAt: new Date(),
+      acknowledged: insertAlert.acknowledged || false
+    };
     this.alerts.set(id, alert);
     return alert;
   }
@@ -183,7 +264,13 @@ export class MemStorage implements IStorage {
 
   async createMaintenanceTask(insertTask: InsertMaintenanceSchedule): Promise<MaintenanceSchedule> {
     const id = randomUUID();
-    const task: MaintenanceSchedule = { ...insertTask, id, createdAt: new Date() };
+    const task: MaintenanceSchedule = { 
+      ...insertTask, 
+      id, 
+      createdAt: new Date(),
+      status: insertTask.status || "scheduled",
+      priority: insertTask.priority || "medium"
+    };
     
     const vesselTasks = this.maintenanceSchedule.get(insertTask.vesselId) || [];
     vesselTasks.push(task);
@@ -193,8 +280,8 @@ export class MemStorage implements IStorage {
   }
 
   async updateMaintenanceTask(id: string, updates: Partial<MaintenanceSchedule>): Promise<MaintenanceSchedule | undefined> {
-    for (const [vesselId, tasks] of this.maintenanceSchedule.entries()) {
-      const taskIndex = tasks.findIndex(task => task.id === id);
+    for (const [vesselId, tasks] of Array.from(this.maintenanceSchedule.entries())) {
+      const taskIndex = tasks.findIndex((task: MaintenanceSchedule) => task.id === id);
       if (taskIndex !== -1) {
         const updatedTask = { ...tasks[taskIndex], ...updates };
         tasks[taskIndex] = updatedTask;

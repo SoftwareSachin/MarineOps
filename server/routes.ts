@@ -143,27 +143,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (vessels.length > 0) {
           const vessel = vessels[0]; // Use first vessel for demo
           
-          // Generate realistic performance metrics
+          // Generate realistic performance metrics with some variability
+          const baseSpeed = 14.2;
+          const speedVariation = (Math.random() - 0.5) * 1.5;
+          const currentSpeed = Math.max(baseSpeed + speedVariation, 10);
+          
           const performanceMetrics = await storage.createPerformanceMetrics({
             vesselId: vessel.id,
-            speed: 13.5 + Math.random() * 2,
-            rpm: 1400 + Math.random() * 100,
-            fuelRate: 24 + Math.random() * 2,
-            engineTemp: 70 + Math.random() * 10,
-            fuelEfficiency: 0.75 + Math.random() * 0.15
+            speed: currentSpeed,
+            rpm: 1400 + (currentSpeed - baseSpeed) * 50 + Math.random() * 50,
+            fuelRate: 24 + (currentSpeed - baseSpeed) * 0.8 + Math.random() * 1.5,
+            engineTemp: 75 + Math.random() * 8,
+            fuelEfficiency: Math.max(0.65 + Math.random() * 0.2, 0.5)
           });
 
-          // Generate environmental data
+          // Generate environmental data with seasonal patterns
           const environmentalData = await storage.createEnvironmentalData({
             vesselId: vessel.id,
-            windSpeed: 10 + Math.random() * 5,
+            windSpeed: 12 + Math.sin(Date.now() / 100000) * 3 + Math.random() * 2,
             windDirection: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(Math.random() * 8)],
-            seaState: Math.floor(Math.random() * 5) + 1,
-            waveHeight: 0.5 + Math.random() * 2,
-            airTemp: 15 + Math.random() * 10,
-            waterTemp: 12 + Math.random() * 8,
-            visibility: 5 + Math.random() * 10
+            seaState: Math.floor(Math.random() * 4) + 2,
+            waveHeight: 1.0 + Math.random() * 1.5,
+            airTemp: 18 + Math.random() * 6,
+            waterTemp: 16 + Math.random() * 4,
+            visibility: 8 + Math.random() * 7
           });
+
+          // Occasionally generate alerts based on conditions
+          if (Math.random() < 0.1) { // 10% chance every 5 seconds
+            const alertTypes = [
+              {
+                severity: 'low' as const,
+                title: 'Course Deviation Minor',
+                description: 'Slight deviation from planned route due to traffic',
+                category: 'navigation' as const
+              },
+              {
+                severity: 'medium' as const,
+                title: 'Engine Temperature Rising',
+                description: `Engine temperature at ${performanceMetrics.engineTemp.toFixed(1)}°C, monitoring closely`,
+                category: 'engine' as const
+              },
+              {
+                severity: 'low' as const,
+                title: 'Weather Update',
+                description: `Wind speed increased to ${environmentalData.windSpeed.toFixed(1)} knots`,
+                category: 'safety' as const
+              }
+            ];
+            
+            const randomAlert = alertTypes[Math.floor(Math.random() * alertTypes.length)];
+            const newAlert = await storage.createAlert({
+              vesselId: vessel.id,
+              ...randomAlert
+            });
+
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({
+                type: 'alert_update',
+                data: newAlert
+              }));
+            }
+          }
 
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({
@@ -174,6 +215,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ws.send(JSON.stringify({
               type: 'environmental_update',
               data: environmentalData
+            }));
+
+            // Update vessel position slightly
+            const currentPos = vessel.position as { latitude: number; longitude: number };
+            const newPosition = {
+              latitude: currentPos.latitude + (Math.random() - 0.5) * 0.001,
+              longitude: currentPos.longitude + (Math.random() - 0.5) * 0.001
+            };
+            
+            await storage.updateVessel(vessel.id, { position: newPosition });
+            
+            ws.send(JSON.stringify({
+              type: 'vessel_update',
+              data: { ...vessel, position: newPosition }
             }));
           }
         }
