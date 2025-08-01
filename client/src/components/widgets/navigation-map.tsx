@@ -171,7 +171,7 @@ export function NavigationMapWidget({
           </TabsList>
 
           <TabsContent value="map">
-            <div className="h-80 relative">
+            <div className="h-96 relative">
               {/* Enhanced Ocean background with depth gradient */}
               <div className="w-full h-full bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 rounded-lg relative overflow-hidden">
                 
@@ -192,10 +192,20 @@ export function NavigationMapWidget({
                   ))}
                 </div>
 
-                {/* Compass rose */}
-                <div className="absolute top-4 left-4 w-16 h-16 border-2 border-white/30 rounded-full bg-black/40 flex items-center justify-center">
-                  <Compass className="w-8 h-8 text-white" style={{ transform: `rotate(${currentBearing}deg)` }} />
-                  <div className="absolute -top-6 text-[10px] text-white font-bold">N</div>
+                {/* Compass rose - repositioned and resized */}
+                <div className="absolute top-4 left-4 w-20 h-20 border-2 border-white/40 rounded-full bg-black/60 flex items-center justify-center shadow-lg backdrop-blur-sm z-50">
+                  <div className="relative">
+                    <Compass className="w-10 h-10 text-white transition-transform duration-1000" style={{ transform: `rotate(${currentBearing}deg)` }} />
+                    {/* Cardinal directions */}
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-[11px] text-white font-bold">N</div>
+                    <div className="absolute top-1/2 -right-8 transform -translate-y-1/2 text-[11px] text-white/80 font-bold">E</div>
+                    <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[11px] text-white/80 font-bold">S</div>
+                    <div className="absolute top-1/2 -left-8 transform -translate-y-1/2 text-[11px] text-white/80 font-bold">W</div>
+                  </div>
+                  {/* Compass degree indicator */}
+                  <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 text-[10px] text-white bg-black/80 px-2 py-1 rounded border border-white/30">
+                    {currentBearing.toFixed(0)}°
+                  </div>
                 </div>
 
                 {/* Enhanced waypoints with non-overlapping positioning */}
@@ -358,7 +368,7 @@ export function NavigationMapWidget({
           </TabsContent>
 
           <TabsContent value="route">
-            <div className="space-y-4 h-80 overflow-y-auto">
+            <div className="space-y-4 h-96 overflow-y-auto">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-medium text-foreground">Route Waypoints</h4>
                 <Badge className="bg-maritime-blue">4 Waypoints</Badge>
@@ -407,7 +417,7 @@ export function NavigationMapWidget({
           </TabsContent>
 
           <TabsContent value="optimization">
-            <div className="space-y-4 h-80 overflow-y-auto">
+            <div className="space-y-4 h-96 overflow-y-auto">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-medium text-foreground">Route Segments Analysis</h4>
                 <Button size="sm" className="bg-maritime-blue hover:bg-blue-700 text-xs">
