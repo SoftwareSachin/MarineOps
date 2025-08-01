@@ -198,12 +198,45 @@ export function NavigationMapWidget({
                   <div className="absolute -top-6 text-[10px] text-white font-bold">N</div>
                 </div>
 
-                {/* Vessel with realistic orientation */}
+                {/* Enhanced waypoints with proper positioning */}
+                {waypoints.map((waypoint, index) => {
+                  const positions = [
+                    { top: '60%', left: '35%' }, // San Francisco Bay
+                    { top: '25%', left: '20%' }, // Point Reyes
+                    { top: '75%', left: '55%' }, // Monterey Bay
+                    { top: '90%', left: '80%' }  // Port of Los Angeles
+                  ];
+                  const pos = positions[index] || positions[0];
+                  
+                  return (
+                    <div
+                      key={waypoint.id}
+                      className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${
+                        waypoint.status === 'current' ? 'animate-pulse' : ''
+                      }`}
+                      style={{
+                        top: pos.top,
+                        left: pos.left
+                      }}
+                    >
+                      <div className={`w-3 h-3 rounded-full border-2 border-white shadow-lg ${
+                        waypoint.status === 'completed' ? 'bg-navigation-green' :
+                        waypoint.status === 'current' ? 'bg-safety-orange' :
+                        'bg-blue-500'
+                      }`} />
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-[10px] text-white bg-black/80 px-2 py-1 rounded whitespace-nowrap border border-white/20">
+                        {waypoint.name}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Vessel with realistic orientation - positioned between waypoints */}
                 <div 
-                  className="absolute transition-all duration-1000 ease-in-out"
+                  className="absolute transition-all duration-1000 ease-in-out z-10"
                   style={{
-                    top: '50%',
-                    left: '50%',
+                    top: '45%',
+                    left: '40%',
                     transform: 'translate(-50%, -50%)'
                   }}
                 >
@@ -211,60 +244,47 @@ export function NavigationMapWidget({
                     className="relative"
                     style={{ transform: getVesselTransform() }}
                   >
-                    <Ship className="w-6 h-6 text-safety-orange drop-shadow-lg" />
+                    <Ship className="w-8 h-8 text-safety-orange drop-shadow-lg filter drop-shadow-[0_0_8px_rgba(255,165,0,0.6)]" />
                   </div>
-                  <div className="absolute -top-10 -left-12 text-xs text-white font-medium bg-black/70 px-2 py-1 rounded whitespace-nowrap border border-safety-orange/50">
-                    MV Atlantic Explorer
-                    <div className="text-[10px] text-safety-orange">
+                  <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 text-xs text-white font-medium bg-black/80 px-3 py-2 rounded-lg whitespace-nowrap border border-safety-orange/50 shadow-lg">
+                    <div className="text-safety-orange font-bold">MV Atlantic Explorer</div>
+                    <div className="text-[10px] text-white/80 mt-1">
                       {vesselPosition.latitude.toFixed(4)}°N, {Math.abs(vesselPosition.longitude).toFixed(4)}°W
                     </div>
                   </div>
                   
                   {/* Wake trail */}
-                  <div className="absolute top-1 left-1/2 transform -translate-x-1/2 translate-y-6">
-                    <div className="w-1 h-8 bg-gradient-to-b from-white/40 to-transparent rounded-full animate-pulse" />
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 translate-y-4 rotate-0">
+                    <div className="w-1 h-12 bg-gradient-to-b from-white/60 to-transparent rounded-full animate-pulse" 
+                         style={{ transform: `rotate(${currentBearing - 90}deg)` }} />
                   </div>
                 </div>
                 
-                {/* Enhanced waypoints with animations */}
-                {waypoints.map((waypoint, index) => (
-                  <div
-                    key={waypoint.id}
-                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${
-                      waypoint.status === 'current' ? 'animate-pulse' : ''
-                    }`}
-                    style={{
-                      top: `${20 + index * 20}%`,
-                      left: `${30 + index * 15}%`
-                    }}
-                  >
-                    <div className={`w-3 h-3 rounded-full border-2 border-white ${
-                      waypoint.status === 'completed' ? 'bg-navigation-green' :
-                      waypoint.status === 'current' ? 'bg-safety-orange' :
-                      'bg-muted'
-                    }`} />
-                    <div className="absolute -top-8 -left-6 text-[10px] text-white bg-black/60 px-1 py-0.5 rounded whitespace-nowrap">
-                      {waypoint.name}
-                    </div>
-                  </div>
-                ))}
-                
-                {/* Dynamic route line with current progress */}
+                {/* Dynamic route line connecting waypoints properly */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none">
                   <defs>
                     <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" stopColor="hsl(var(--navigation-green))" stopOpacity="1" />
-                      <stop offset="30%" stopColor="hsl(var(--safety-orange))" stopOpacity="0.8" />
-                      <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.4" />
+                      <stop offset="50%" stopColor="hsl(var(--safety-orange))" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.5" />
                     </linearGradient>
                   </defs>
+                  {/* Route path connecting waypoints in proper sequence */}
                   <path 
-                    d="M150 100 Q200 80 250 120 Q350 140 420 160 Q480 180 520 200" 
+                    d="M 35% 60% Q 25% 40% 20% 25% Q 35% 50% 55% 75% Q 70% 85% 80% 90%" 
                     stroke="url(#routeGradient)" 
                     strokeWidth="3" 
                     fill="none" 
                     strokeDasharray="8,4" 
-                    opacity="0.9"
+                    opacity="0.8"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  {/* Current position indicator on route */}
+                  <circle 
+                    cx="40%" 
+                    cy="45%" 
+                    r="3" 
+                    fill="hsl(var(--safety-orange))" 
                     className="animate-pulse"
                   />
                 </svg>
@@ -292,34 +312,34 @@ export function NavigationMapWidget({
                   </Button>
                 </div>
 
-                {/* Enhanced environmental overlay */}
-                <div className="absolute bottom-4 left-4 bg-black/80 rounded-lg p-3 text-xs text-white border border-maritime-blue/30 backdrop-blur-sm">
-                  <div className="grid grid-cols-2 gap-3">
+                {/* Enhanced environmental overlay - repositioned */}
+                <div className="absolute bottom-4 left-4 bg-black/85 rounded-lg p-3 text-xs text-white border border-maritime-blue/40 backdrop-blur-sm shadow-lg">
+                  <div className="grid grid-cols-2 gap-3 min-w-[300px]">
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                      <span>Wind: {environmentalData.windSpeed} kts {environmentalData.windDirection}</span>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse flex-shrink-0" />
+                      <span>Wind: {environmentalData.windSpeed?.toFixed(1) || '12.0'} kts {environmentalData.windDirection || 'NW'}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-yellow-400 rounded-full" />
-                      <span>Air: {environmentalData.temperature}°C</span>
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0" />
+                      <span>Air: {environmentalData.temperature?.toFixed(0) || '18'}°C</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      <span>Sea State: {environmentalData.seaState}</span>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                      <span>Sea State: {environmentalData.seaState || 3}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-navigation-green rounded-full" />
+                      <div className="w-2 h-2 bg-navigation-green rounded-full flex-shrink-0" />
                       <span>Visibility: Good</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Speed and heading indicator */}
-                <div className="absolute bottom-4 right-4 bg-black/80 rounded-lg p-3 text-xs text-white border border-maritime-blue/30 backdrop-blur-sm">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-safety-orange">14.2</div>
-                    <div>knots</div>
-                    <div className="text-[10px] text-muted-foreground mt-1">
+                {/* Speed and heading indicator - improved positioning */}
+                <div className="absolute bottom-4 right-4 bg-black/85 rounded-lg p-4 text-white border border-maritime-blue/40 backdrop-blur-sm shadow-lg">
+                  <div className="text-center min-w-[80px]">
+                    <div className="text-2xl font-bold text-safety-orange mb-1">14.2</div>
+                    <div className="text-xs text-white/80 mb-2">knots</div>
+                    <div className="text-xs text-muted-foreground border-t border-white/20 pt-2">
                       Heading: {currentBearing.toFixed(0)}°
                     </div>
                   </div>
