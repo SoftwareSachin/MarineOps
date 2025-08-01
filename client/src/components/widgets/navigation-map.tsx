@@ -198,45 +198,52 @@ export function NavigationMapWidget({
                   <div className="absolute -top-6 text-[10px] text-white font-bold">N</div>
                 </div>
 
-                {/* Enhanced waypoints with proper positioning */}
+                {/* Enhanced waypoints with non-overlapping positioning */}
                 {waypoints.map((waypoint, index) => {
                   const positions = [
-                    { top: '60%', left: '35%' }, // San Francisco Bay
-                    { top: '25%', left: '20%' }, // Point Reyes
-                    { top: '75%', left: '55%' }, // Monterey Bay
-                    { top: '90%', left: '80%' }  // Port of Los Angeles
+                    { top: '75%', left: '30%', labelOffset: 'top' }, // San Francisco Bay
+                    { top: '15%', left: '18%', labelOffset: 'bottom' }, // Point Reyes  
+                    { top: '85%', left: '60%', labelOffset: 'top' }, // Monterey Bay
+                    { top: '95%', left: '85%', labelOffset: 'left' }  // Port of Los Angeles
                   ];
-                  const pos = positions[index] || positions[0];
+                  const config = positions[index] || positions[0];
                   
                   return (
                     <div
                       key={waypoint.id}
-                      className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${
+                      className={`absolute transform -translate-x-1/2 -translate-y-1/2 z-20 ${
                         waypoint.status === 'current' ? 'animate-pulse' : ''
                       }`}
                       style={{
-                        top: pos.top,
-                        left: pos.left
+                        top: config.top,
+                        left: config.left
                       }}
                     >
-                      <div className={`w-3 h-3 rounded-full border-2 border-white shadow-lg ${
+                      <div className={`w-4 h-4 rounded-full border-2 border-white shadow-lg ${
                         waypoint.status === 'completed' ? 'bg-navigation-green' :
                         waypoint.status === 'current' ? 'bg-safety-orange' :
                         'bg-blue-500'
                       }`} />
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-[10px] text-white bg-black/80 px-2 py-1 rounded whitespace-nowrap border border-white/20">
+                      <div 
+                        className={`absolute text-[10px] text-white bg-black/90 px-2 py-1 rounded whitespace-nowrap border border-white/30 shadow-lg ${
+                          config.labelOffset === 'top' ? '-top-8 left-1/2 transform -translate-x-1/2' :
+                          config.labelOffset === 'bottom' ? 'top-6 left-1/2 transform -translate-x-1/2' :
+                          config.labelOffset === 'left' ? 'top-1/2 -left-20 transform -translate-y-1/2' :
+                          'top-1/2 left-6 transform -translate-y-1/2'
+                        }`}
+                      >
                         {waypoint.name}
                       </div>
                     </div>
                   );
                 })}
 
-                {/* Vessel with realistic orientation - positioned between waypoints */}
+                {/* Vessel with realistic orientation - positioned away from waypoints */}
                 <div 
-                  className="absolute transition-all duration-1000 ease-in-out z-10"
+                  className="absolute transition-all duration-1000 ease-in-out z-30"
                   style={{
-                    top: '45%',
-                    left: '40%',
+                    top: '50%',
+                    left: '45%',
                     transform: 'translate(-50%, -50%)'
                   }}
                 >
@@ -246,7 +253,8 @@ export function NavigationMapWidget({
                   >
                     <Ship className="w-8 h-8 text-safety-orange drop-shadow-lg filter drop-shadow-[0_0_8px_rgba(255,165,0,0.6)]" />
                   </div>
-                  <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 text-xs text-white font-medium bg-black/80 px-3 py-2 rounded-lg whitespace-nowrap border border-safety-orange/50 shadow-lg">
+                  {/* Vessel label positioned to avoid overlap */}
+                  <div className="absolute -top-16 -left-20 text-xs text-white font-medium bg-black/90 px-3 py-2 rounded-lg whitespace-nowrap border border-safety-orange/50 shadow-xl">
                     <div className="text-safety-orange font-bold">MV Atlantic Explorer</div>
                     <div className="text-[10px] text-white/80 mt-1">
                       {vesselPosition.latitude.toFixed(4)}°N, {Math.abs(vesselPosition.longitude).toFixed(4)}°W
@@ -254,7 +262,7 @@ export function NavigationMapWidget({
                   </div>
                   
                   {/* Wake trail */}
-                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 translate-y-4 rotate-0">
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 translate-y-4">
                     <div className="w-1 h-12 bg-gradient-to-b from-white/60 to-transparent rounded-full animate-pulse" 
                          style={{ transform: `rotate(${currentBearing - 90}deg)` }} />
                   </div>
@@ -269,9 +277,9 @@ export function NavigationMapWidget({
                       <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity="0.5" />
                     </linearGradient>
                   </defs>
-                  {/* Route path connecting waypoints in proper sequence */}
+                  {/* Route path connecting repositioned waypoints */}
                   <path 
-                    d="M 35% 60% Q 25% 40% 20% 25% Q 35% 50% 55% 75% Q 70% 85% 80% 90%" 
+                    d="M 30% 75% Q 20% 50% 18% 15% Q 35% 30% 45% 50% Q 55% 70% 60% 85% Q 75% 90% 85% 95%" 
                     stroke="url(#routeGradient)" 
                     strokeWidth="3" 
                     fill="none" 
@@ -281,11 +289,12 @@ export function NavigationMapWidget({
                   />
                   {/* Current position indicator on route */}
                   <circle 
-                    cx="40%" 
-                    cy="45%" 
+                    cx="45%" 
+                    cy="50%" 
                     r="3" 
                     fill="hsl(var(--safety-orange))" 
                     className="animate-pulse"
+                    opacity="0.8"
                   />
                 </svg>
                 
@@ -312,9 +321,9 @@ export function NavigationMapWidget({
                   </Button>
                 </div>
 
-                {/* Enhanced environmental overlay - repositioned */}
-                <div className="absolute bottom-4 left-4 bg-black/85 rounded-lg p-3 text-xs text-white border border-maritime-blue/40 backdrop-blur-sm shadow-lg">
-                  <div className="grid grid-cols-2 gap-3 min-w-[300px]">
+                {/* Enhanced environmental overlay - positioned to avoid waypoints */}
+                <div className="absolute bottom-4 left-4 bg-black/90 rounded-lg p-3 text-xs text-white border border-maritime-blue/40 backdrop-blur-sm shadow-lg z-40">
+                  <div className="grid grid-cols-2 gap-3 min-w-[280px]">
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse flex-shrink-0" />
                       <span>Wind: {environmentalData.windSpeed?.toFixed(1) || '12.0'} kts {environmentalData.windDirection || 'NW'}</span>
