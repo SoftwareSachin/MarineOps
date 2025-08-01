@@ -61,14 +61,70 @@ export function NavigationMapWidget({
   const [selectedTab, setSelectedTab] = useState('map');
   const [zoomLevel, setZoomLevel] = useState(1);
   const [currentBearing, setCurrentBearing] = useState(285);
+  const [vesselAnimPosition, setVesselAnimPosition] = useState({ x: 45, y: 50 });
+  const [currentSpeed, setCurrentSpeed] = useState(14.2);
+  const [wakeTrails, setWakeTrails] = useState<Array<{x: number, y: number, opacity: number, id: string}>>([]);
 
-  // Simulate dynamic bearing updates
+  // Simulate realistic vessel movement and bearing changes
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentBearing(prev => prev + (Math.random() - 0.5) * 2);
-    }, 3000);
+      // Realistic bearing drift with course corrections
+      setCurrentBearing(prev => {
+        const drift = (Math.random() - 0.5) * 1.5;
+        const courseCorrection = Math.sin(Date.now() / 30000) * 0.5;
+        return prev + drift + courseCorrection;
+      });
+
+      // Simulate vessel movement along route
+      setVesselAnimPosition(prev => {
+        const speedFactor = currentSpeed / 25; // Normalize speed
+        const bearingRad = ((currentBearing - 90) * Math.PI) / 180;
+        
+        const deltaX = Math.cos(bearingRad) * speedFactor * 0.1;
+        const deltaY = Math.sin(bearingRad) * speedFactor * 0.1;
+        
+        let newX = prev.x + deltaX;
+        let newY = prev.y + deltaY;
+        
+        // Keep vessel within bounds and simulate route following
+        if (newX < 20 || newX > 80) newX = Math.max(20, Math.min(80, newX));
+        if (newY < 15 || newY > 85) newY = Math.max(15, Math.min(85, newY));
+        
+        return { x: newX, y: newY };
+      });
+
+      // Update speed with realistic variations
+      setCurrentSpeed(prev => {
+        const variation = (Math.random() - 0.5) * 0.5;
+        const newSpeed = prev + variation;
+        return Math.max(12, Math.min(16, newSpeed));
+      });
+    }, 2000);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [currentBearing, currentSpeed]);
+
+  // Generate wake trails
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newTrail = {
+        x: vesselAnimPosition.x,
+        y: vesselAnimPosition.y,
+        opacity: 1,
+        id: Date.now().toString()
+      };
+      
+      setWakeTrails(prev => {
+        const updated = [...prev, newTrail]
+          .map(trail => ({ ...trail, opacity: trail.opacity - 0.1 }))
+          .filter(trail => trail.opacity > 0)
+          .slice(-15); // Keep last 15 trails
+        return updated;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [vesselAnimPosition]);
 
   const waypoints: Waypoint[] = [
     {
@@ -175,21 +231,67 @@ export function NavigationMapWidget({
               {/* Enhanced Ocean background with depth gradient */}
               <div className="w-full h-full bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 rounded-lg relative overflow-hidden">
                 
-                {/* Depth contours */}
-                <div className="absolute inset-0 opacity-20">
-                  {[...Array(6)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="absolute border border-blue-300 rounded-full"
-                      style={{
-                        width: `${(i + 1) * 80}px`,
-                        height: `${(i + 1) * 80}px`,
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                    />
-                  ))}
+                {/* Animated wave layers */}
+                <div className="absolute inset-0">
+                  {/* Base wave layer */}
+                  <div className="absolute inset-0 opacity-30">
+                    <div className="w-full h-full animate-pulse" 
+                         style={{
+                           background: `
+                             radial-gradient(ellipse at 20% 30%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+                             radial-gradient(ellipse at 70% 60%, rgba(29, 78, 216, 0.2) 0%, transparent 40%),
+                             radial-gradient(ellipse at 40% 80%, rgba(96, 165, 250, 0.25) 0%, transparent 45%)
+                           `,
+                           animation: 'wave-motion 8s ease-in-out infinite'
+                         }}>
+                    </div>
+                  </div>
+                  
+                  {/* Moving wave patterns */}
+                  <div className="absolute inset-0 opacity-20">
+                    <div className="w-full h-full" 
+                         style={{
+                           backgroundImage: `
+                             linear-gradient(45deg, rgba(255,255,255,0.1) 1px, transparent 1px),
+                             linear-gradient(-45deg, rgba(255,255,255,0.05) 1px, transparent 1px)
+                           `,
+                           backgroundSize: '60px 60px',
+                           animation: 'drift 20s linear infinite'
+                         }}>
+                    </div>
+                  </div>
+
+                  {/* Sea foam effect */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="w-full h-full" 
+                         style={{
+                           background: `
+                             radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.4) 2px, transparent 3px),
+                             radial-gradient(circle at 85% 75%, rgba(255, 255, 255, 0.3) 1px, transparent 2px),
+                             radial-gradient(circle at 60% 40%, rgba(255, 255, 255, 0.2) 1.5px, transparent 2.5px)
+                           `,
+                           animation: 'foam-drift 12s ease-in-out infinite'
+                         }}>
+                    </div>
+                  </div>
+
+                  {/* Depth contours with subtle movement */}
+                  <div className="absolute inset-0 opacity-15">
+                    {[...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute border border-blue-300 rounded-full transition-all duration-3000"
+                        style={{
+                          width: `${(i + 1) * 100}px`,
+                          height: `${(i + 1) * 100}px`,
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          animation: `wave-motion ${8 + i * 2}s ease-in-out infinite`
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 {/* Compass rose - repositioned and resized */}
@@ -248,34 +350,81 @@ export function NavigationMapWidget({
                   );
                 })}
 
-                {/* Vessel with realistic orientation - positioned away from waypoints */}
+                {/* Dynamic wake trails */}
+                {wakeTrails.map((trail) => (
+                  <div
+                    key={trail.id}
+                    className="absolute w-2 h-2 bg-white/40 rounded-full transition-opacity duration-1000"
+                    style={{
+                      top: `${trail.y}%`,
+                      left: `${trail.x}%`,
+                      opacity: trail.opacity,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  />
+                ))}
+
+                {/* Living vessel with realistic movement */}
                 <div 
-                  className="absolute transition-all duration-1000 ease-in-out z-30"
+                  className="absolute transition-all duration-2000 ease-out z-30"
                   style={{
-                    top: '50%',
-                    left: '45%',
+                    top: `${vesselAnimPosition.y}%`,
+                    left: `${vesselAnimPosition.x}%`,
                     transform: 'translate(-50%, -50%)'
                   }}
                 >
+                  {/* Vessel radar pulse effect */}
+                  <div className="absolute inset-0 w-12 h-12 border border-safety-orange/30 rounded-full animate-ping" 
+                       style={{ animationDuration: '3s' }} />
+                  
                   <div 
-                    className="relative"
+                    className="relative transition-transform duration-1000 ease-out"
                     style={{ transform: getVesselTransform() }}
                   >
-                    <Ship className="w-8 h-8 text-safety-orange drop-shadow-lg filter drop-shadow-[0_0_8px_rgba(255,165,0,0.6)]" />
+                    <Ship className="w-8 h-8 text-safety-orange drop-shadow-lg filter drop-shadow-[0_0_8px_rgba(255,165,0,0.6)] animate-pulse" 
+                          style={{ animationDuration: '2s' }} />
+                    
+                    {/* Dynamic bow wave effect */}
+                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2">
+                      <div className="w-3 h-1 bg-gradient-to-r from-transparent via-white/60 to-transparent rounded-full animate-pulse" />
+                    </div>
                   </div>
-                  {/* Vessel label positioned to avoid overlap */}
-                  <div className="absolute -top-16 -left-20 text-xs text-white font-medium bg-black/90 px-3 py-2 rounded-lg whitespace-nowrap border border-safety-orange/50 shadow-xl">
-                    <div className="text-safety-orange font-bold">MV Atlantic Explorer</div>
-                    <div className="text-[10px] text-white/80 mt-1">
-                      {vesselPosition.latitude.toFixed(4)}°N, {Math.abs(vesselPosition.longitude).toFixed(4)}°W
+
+                  {/* Enhanced vessel info with live data */}
+                  <div className="absolute -top-18 -left-16 text-xs text-white font-medium bg-black/95 px-3 py-2 rounded-lg whitespace-nowrap border border-safety-orange/50 shadow-xl backdrop-blur-sm">
+                    <div className="text-safety-orange font-bold flex items-center">
+                      MV Atlantic Explorer
+                      <div className="w-2 h-2 bg-navigation-green rounded-full ml-2 animate-pulse" />
+                    </div>
+                    <div className="text-[10px] text-white/80 mt-1 space-y-0.5">
+                      <div>{vesselPosition.latitude.toFixed(4)}°N, {Math.abs(vesselPosition.longitude).toFixed(4)}°W</div>
+                      <div className="flex justify-between">
+                        <span>Speed: {currentSpeed.toFixed(1)} kts</span>
+                        <span>HDG: {currentBearing.toFixed(0)}°</span>
+                      </div>
                     </div>
                   </div>
                   
-                  {/* Wake trail */}
+                  {/* Dynamic propeller wash effect */}
                   <div className="absolute top-2 left-1/2 transform -translate-x-1/2 translate-y-4">
-                    <div className="w-1 h-12 bg-gradient-to-b from-white/60 to-transparent rounded-full animate-pulse" 
-                         style={{ transform: `rotate(${currentBearing - 90}deg)` }} />
+                    <div className="w-1 h-16 bg-gradient-to-b from-white/40 via-white/20 to-transparent rounded-full" 
+                         style={{ 
+                           transform: `rotate(${currentBearing - 90}deg)`,
+                           filter: `blur(0.5px)`
+                         }} />
+                    {/* Secondary wash */}
+                    <div className="absolute top-0 left-0 w-1 h-12 bg-gradient-to-b from-blue-200/30 to-transparent rounded-full animate-pulse" 
+                         style={{ 
+                           transform: `rotate(${currentBearing - 90}deg) translateY(8px)`,
+                           animationDelay: '0.5s'
+                         }} />
                   </div>
+
+                  {/* Navigation lights */}
+                  <div className="absolute top-0 left-0 w-1 h-1 bg-red-400 rounded-full animate-pulse" 
+                       style={{ animationDuration: '1s' }} />
+                  <div className="absolute top-0 right-0 w-1 h-1 bg-green-400 rounded-full animate-pulse" 
+                       style={{ animationDuration: '1s', animationDelay: '0.5s' }} />
                 </div>
                 
                 {/* Dynamic route line connecting waypoints properly */}
@@ -353,13 +502,18 @@ export function NavigationMapWidget({
                   </div>
                 </div>
 
-                {/* Speed and heading indicator - improved positioning */}
-                <div className="absolute bottom-4 right-4 bg-black/85 rounded-lg p-4 text-white border border-maritime-blue/40 backdrop-blur-sm shadow-lg">
-                  <div className="text-center min-w-[80px]">
-                    <div className="text-2xl font-bold text-safety-orange mb-1">14.2</div>
+                {/* Live speed and heading indicator */}
+                <div className="absolute bottom-4 right-4 bg-black/90 rounded-lg p-4 text-white border border-maritime-blue/40 backdrop-blur-sm shadow-lg">
+                  <div className="text-center min-w-[90px]">
+                    <div className="text-2xl font-bold text-safety-orange mb-1 transition-all duration-500">
+                      {currentSpeed.toFixed(1)}
+                    </div>
                     <div className="text-xs text-white/80 mb-2">knots</div>
                     <div className="text-xs text-muted-foreground border-t border-white/20 pt-2">
                       Heading: {currentBearing.toFixed(0)}°
+                    </div>
+                    <div className="text-[10px] text-green-400 mt-1">
+                      ● LIVE TRACKING
                     </div>
                   </div>
                 </div>
