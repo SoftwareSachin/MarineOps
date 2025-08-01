@@ -1,8 +1,8 @@
-# Marine Vessel Operations Dashboard
+# Ready Captain - Marine Vessel Operations Dashboard
 
 ## Overview
 
-The Marine Vessel Operations platform is a comprehensive maritime logistics dashboard that revolutionizes maritime operations by providing real-time monitoring and analytics for marine vessels. The system combines a modern React frontend with an Express.js backend to deliver real-time performance metrics, environmental monitoring, maintenance scheduling, and alert management. The platform is designed to optimize vessel performance, enable predictive maintenance, ensure safety assurance, and improve cost efficiency across global fleets.
+Ready Captain is a comprehensive maritime logistics dashboard that revolutionizes maritime operations by providing real-time monitoring and analytics for marine vessels. The system combines a modern React frontend with an Express.js backend to deliver real-time performance metrics, environmental monitoring, maintenance scheduling, and alert management. The platform is designed to optimize vessel performance, enable predictive maintenance, ensure safety assurance, and improve cost efficiency across global fleets.
 
 ## User Preferences
 
