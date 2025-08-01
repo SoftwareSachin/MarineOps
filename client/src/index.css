@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(222, 84%, 5%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 32%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(222, 84%, 5%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 84%, 5%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217, 32%, 17%);
+  --input: hsl(217, 32%, 17%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-foreground: hsl(222, 47%, 11%);
+  --secondary: hsl(217, 32%, 17%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217, 32%, 17%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62%, 30%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(217, 91%, 60%);
+  --radius: 0.5rem;
+  
+  /* Maritime-specific colors */
+  --maritime-blue: hsl(217, 91%, 60%);
+  --deep-navy: hsl(222, 84%, 5%);
+  --safety-orange: hsl(24, 95%, 53%);
+  --navigation-green: hsl(142, 76%, 36%);
+  --caution-yellow: hsl(45, 93%, 47%);
+  --alert-red: hsl(0, 84%, 60%);
+  --steel-gray: hsl(215, 20%, 65%);
+  --slate-dark: hsl(215, 25%, 27%);
+  
+  /* Sidebar colors */
+  --sidebar-background: hsl(215, 25%, 27%);
+  --sidebar-foreground: hsl(210, 40%, 98%);
+  --sidebar-primary: hsl(217, 91%, 60%);
+  --sidebar-primary-foreground: hsl(222, 47%, 11%);
+  --sidebar-accent: hsl(217, 32%, 17%);
+  --sidebar-accent-foreground: hsl(210, 40%, 98%);
+  --sidebar-border: hsl(217, 32%, 17%);
+  --sidebar-ring: hsl(217, 91%, 60%);
+}
+
+.dark {
+  --background: hsl(222, 84%, 5%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 32%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(222, 84%, 5%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 84%, 5%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217, 32%, 17%);
+  --input: hsl(217, 32%, 17%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-foreground: hsl(222, 47%, 11%);
+  --secondary: hsl(217, 32%, 17%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217, 32%, 17%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62%, 30%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(217, 91%, 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .widget-container {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .widget-container:hover {
+    @apply transform -translate-y-1;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  }
+  
+  .sidebar-collapsed {
+    width: 64px;
+  }
+  
+  .sidebar-expanded {
+    width: 280px;
+  }
+  
+  .sidebar-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .alert-pulse {
+    @apply animate-pulse;
+  }
+  
+  .metric-animation {
+    animation: slideIn 0.5s ease;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .gauge-container {
+    position: relative;
+    width: 200px;
+    height: 100px;
+  }
+}
+
+@layer utilities {
+  .maritime-blue {
+    color: var(--maritime-blue);
+  }
+  
+  .bg-maritime-blue {
+    background-color: var(--maritime-blue);
+  }
+  
+  .safety-orange {
+    color: var(--safety-orange);
+  }
+  
+  .bg-safety-orange {
+    background-color: var(--safety-orange);
+  }
+  
+  .navigation-green {
+    color: var(--navigation-green);
+  }
+  
+  .bg-navigation-green {
+    background-color: var(--navigation-green);
+  }
+  
+  .caution-yellow {
+    color: var(--caution-yellow);
+  }
+  
+  .bg-caution-yellow {
+    background-color: var(--caution-yellow);
+  }
+  
+  .alert-red {
+    color: var(--alert-red);
+  }
+  
+  .bg-alert-red {
+    background-color: var(--alert-red);
+  }
+  
+  .steel-gray {
+    color: var(--steel-gray);
+  }
+  
+  .bg-steel-gray {
+    background-color: var(--steel-gray);
+  }
+  
+  .slate-dark {
+    background-color: var(--slate-dark);
+  }
+  
+  .deep-navy {
+    background-color: var(--deep-navy);
+  }
+}
